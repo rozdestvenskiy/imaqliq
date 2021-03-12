@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
     int ip_flag = 0;
     int port_flag = 0;
     char buffer[256];
-	
+
 
     int rez;
     int option_index = -1;
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
             };
         };
     };
-	
+
     if (ip_flag == 0)
     {
         ipv4_addr_str = getenv("L2ADDR");
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
     	printf("Port not found\n");
     	exit(1);
     }
-    
+
 
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0)
@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
         printf("Error wile creating socket\n");
         exit(1);
     }
-	
+
     int port = atoi(port_str);
     if (port == 0)
     {
@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
         exit(1);
     }
     server = gethostbyname(ipv4_addr_str);
-    
+
     if (server == NULL)
     {
         printf("Error: no such host\n");
@@ -133,28 +133,30 @@ int main(int argc, char* argv[])
     char *str;
     str = malloc(sizeof(char) * 255);
     bzero(buffer, 256);
-	
+
     fgets(str, 255, stdin);
-	
+
 	char *fileName = malloc(sizeof(char) * 255);
 	strncpy(fileName, str, strlen(str) - 1);
-	
+  snprintf(fileName, strlen(str), "%s", str);
+
     if (connect(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
     {
         printf("Error while connecting\n");
         close(sock);
         exit(1);
     }
-    
+
 	FILE *fileToCopy = fopen(fileName, "rb");
+  printf("f = %s\n", fileName);
 	if (fileToCopy == NULL)
 	{
 		printf("File doesn't exist\n");
 		close(sock);
 		exit(1);
 	}
-	
-	
+
+
     int n;
     n = write(sock, str, strlen(str));
     if (n < 0)
@@ -165,8 +167,8 @@ int main(int argc, char* argv[])
     }
 	int bytes = 0;
 	char by;
-	
-	
+
+
 	while (!feof(fileToCopy))
 	{
 		fread(&by, sizeof(char), 1, fileToCopy);
@@ -174,7 +176,7 @@ int main(int argc, char* argv[])
 	}
 	printf("bytes = %d\n", bytes);
 	int byteC = htonl(bytes);
-	
+
     n = write(sock, &byteC, sizeof(int));
     if (n < 0)
     {
@@ -183,7 +185,7 @@ int main(int argc, char* argv[])
         exit(1);
     }
 	fseek(fileToCopy, 0, SEEK_SET);
-	
+
 	for (int i = 0; i < bytes; i++)
 	{
 		fread(&by, sizeof(char), 1, fileToCopy);
@@ -195,11 +197,11 @@ int main(int argc, char* argv[])
 		        exit(1);
 		    }
 	}
-	
-	
-	
-	
-	
+
+
+
+
+
 	//bytes = 324834;
 	n = write(sock, -1, sizeof(char));
 

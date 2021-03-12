@@ -39,7 +39,7 @@ typedef struct {
 } thread_dataS;
 
 
-static void SIG_handler(int signum, siginfo_t *s, void *c) 
+static void SIG_handler(int signum, siginfo_t *s, void *c)
 {
     if (signum == SIGINT)
     {
@@ -60,19 +60,19 @@ int main(int argc, char* argv[])
     sigemptyset(&sa.sa_mask);
     sigaddset(&sa.sa_mask, SIGINT);
     sigaddset(&sa.sa_mask, SIGHUP);
-	
+
     sa.sa_sigaction = SIG_handler;
     sa.sa_flags |= (SA_SIGINFO | SA_RESTART);
-	
+
     //check(sigaction(SIGINT, &sa, NULL));
     //check(sigaction(SIGHUP, &sa, NULL));
-	
+
     int rez;
     int option_index = -1;
     while ((rez = getopt_long(argc, argv, short_options, long_options, &option_index)) != -1)
     {
         switch (rez)
-        {   
+        {
             case 'a':
             {
                 if (optarg)
@@ -118,8 +118,8 @@ int main(int argc, char* argv[])
             };
         };
     };
-	
-	
+
+
     if (ip_flag == 0)
     {
         ipv4_addr_str = getenv("L2ADDR");
@@ -138,9 +138,9 @@ int main(int argc, char* argv[])
     	printf("Port not found\n");
     	exit(1);
     }
-	
+
 	sock = socket(AF_INET, SOCK_STREAM, 0);
-	
+
 	if (sock < 0)
 	{
 	    printf("Error wile creating socket\n");
@@ -169,11 +169,11 @@ int main(int argc, char* argv[])
 	    printf("Error: wrong sock options\n");
 	    exit(1);
 	}
-	
+
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = inet_addr(ipv4_addr_str);
 	serv_addr.sin_port = htons(port);
-	
+
 	int x;
 	x = bind(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 	if (x != 0)
@@ -181,14 +181,14 @@ int main(int argc, char* argv[])
 	    printf("Error: while binding\n");
 	    exit(1);
 	}
-	
-	
-	
+
+
+
 	listen(sock, 10);
 
 	pid_t parpid;
-	
-	
+	//daemon_func();
+
 	if ((parpid = fork()) < 0)
 	{
 	    printf("Error: creating fork with daemon\n");
@@ -196,7 +196,7 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-	    if (parpid != 0) 
+	    if (parpid != 0)
 		{
 	        exit(0);
 	    }
@@ -226,14 +226,14 @@ int daemon_func(void)
         {
             exit(1);
         }
-		
+
         n = read(connfd, str_in, 255);
-		
+
         if (n == -1)
         {
             exit(1);
         }
-        
+
         int length = 0;
         for (int i = 0; i < strlen(str_in); i++)
         {
@@ -266,6 +266,7 @@ int daemon_func(void)
 		char *xx = malloc(sizeof(char) * 100);
 		snprintf(xx, sizeof(char) * 100, "%s%s", "CP", str_in);
 		strncpy(td_in->file_name, xx, length + 2);
+
         int rr;
         rr = pthread_create(&(new_thread), NULL, threadFunc, td_in);
         if (rr != 0)
@@ -273,7 +274,7 @@ int daemon_func(void)
             exit(1);
         }
         free(str_in);
-        
+
     }
     close(sock);
     return 0;
@@ -281,7 +282,7 @@ int daemon_func(void)
 
 
 void* threadFunc(void* thread_data)
-{	
+{
     thread_dataS *data = (thread_dataS *) thread_data;
 	int ncheck;
 	int buffX;
@@ -290,12 +291,12 @@ void* threadFunc(void* thread_data)
 	char by;
 	read(data->out_socket, &byteC, sizeof(int));
 	bytes = ntohl(byteC);
-	
+
 	FILE *res = fopen(data->file_name, "w");
 	for (int i = 0; i < bytes - 1; i++)
 	{
 		ncheck = recv(data->out_socket, &by, sizeof(char), 0);
-		
+
 		if (ncheck == -1)
 		{
 			close(res);
@@ -306,17 +307,16 @@ void* threadFunc(void* thread_data)
 			close(res);
 			break;
 		}
-		putc(by, res);
+    fprintf(res, "%c", by);
+		//putc(by, res);
 	}
-    
+
 	int n = write(data->out_socket, "Successful", strlen("Successful"));
-    
+
     close(data->out_socket);
-	fclose(res);
+	  fclose(res);
 	//free(data);
     free(thread_data);
     pthread_detach(pthread_self());
     pthread_exit(0);
 }
-
-
