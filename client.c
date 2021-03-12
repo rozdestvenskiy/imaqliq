@@ -30,12 +30,12 @@ int main(int argc, char* argv[])
     int ip_flag = 0;
     int port_flag = 0;
     char buffer[256];
+	
 
     int rez;
     int option_index = -1;
     while ((rez = getopt_long(argc, argv, short_options, long_options, &option_index)) != -1)
     {
-        //printf("%c\n", rez);
         switch (rez)
         {
             case 'a':
@@ -187,8 +187,6 @@ int main(int argc, char* argv[])
 	for (int i = 0; i < bytes; i++)
 	{
 		fread(&by, sizeof(char), 1, fileToCopy);
-		printf("%c", by);
-	
 		n = send(sock, &by, sizeof(char), 0);
 		if (n < 0)
 		    {

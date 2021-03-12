@@ -181,16 +181,14 @@ int main(int argc, char* argv[])
 	    printf("Error: while binding\n");
 	    exit(1);
 	}
-	FILE *uu = fopen("uu.txt", "w");
-	fprintf(uu, "dfnipwfhwe;jo");
+	
 	
 	
 	listen(sock, 10);
 
 	pid_t parpid;
-	daemon_func();
 	
-	/*
+	
 	if ((parpid = fork()) < 0)
 	{
 	    printf("Error: creating fork with daemon\n");
@@ -209,7 +207,6 @@ int main(int argc, char* argv[])
 	    close(stdout);
 	    close(stderr);
 	 }
-	*/
 }
 
 int daemon_func(void)
@@ -231,8 +228,6 @@ int daemon_func(void)
         }
 		
         n = read(connfd, str_in, 255);
-		printf("acc\n");
-		printf("%s", str_in);
 		
         if (n == -1)
         {
@@ -262,98 +257,66 @@ int daemon_func(void)
         {
             exit(1);
         }
-        td_in->file_name = malloc(sizeof(char) * length);
+        td_in->file_name = malloc(sizeof(char) * (length + 10));
         if (td_in->file_name == NULL)
         {
             exit(1);
         }
         td_in->out_socket = connfd;
-
-
-        strncpy(td_in->file_name, str_in, length);
 		char *xx = malloc(sizeof(char) * 100);
-		snprintf(xx, sizeof(char) * 100, "%s%s", "res", td_in->file_name);
-		printf("s = %s\n", xx);
-		FILE *res = fopen(xx, "a");
-		for (int i = 0; i < 100; i++)
-		{
-			fprintf(res, "ABCDEF\n");
-			fflush(res);
-		}
-		td_in->fout = res;
-		close(res);
-		//printf("file name = %s\n", td_in->file_name);
+		snprintf(xx, sizeof(char) * 100, "%s%s", "CP", str_in);
+		strncpy(td_in->file_name, xx, length + 2);
         int rr;
         rr = pthread_create(&(new_thread), NULL, threadFunc, td_in);
         if (rr != 0)
         {
             exit(1);
         }
-        
-        //bzero(buffer, 256);
-        //sleep(1);
         free(str_in);
         
     }
     close(sock);
-
     return 0;
 }
 
 
 void* threadFunc(void* thread_data)
-{
-	/*
+{	
     thread_dataS *data = (thread_dataS *) thread_data;
 	int ncheck;
 	int buffX;
 	int bytes;
 	int byteC;
 	char by;
-	printf("ready for bytes %d\n", data->out_socket);
 	read(data->out_socket, &byteC, sizeof(int));
 	bytes = ntohl(byteC);
-	printf("bytes = %d\n", bytes);
-    printf("here1\n");
 	
-	//FILE *res = fopen(data->file_name, "wb");
-	//FILE *res = fopen("res.txt", "w");
-	
-	fprintf(data->fout, "hbfehnfhjndk");
-	
-	if (data->fout == NULL)
-	{
-		printf("res = null\n");
-		
-	}
-	
-	printf("here2\n");
-	for (int i = 0; i < bytes; i++)
+	FILE *res = fopen(data->file_name, "w");
+	for (int i = 0; i < bytes - 1; i++)
 	{
 		ncheck = recv(data->out_socket, &by, sizeof(char), 0);
 		
 		if (ncheck == -1)
 		{
-			close(data->fout);
+			close(res);
 			break;
 		}
 		if (by == -1)
 		{
-			close(data->fout);
+			close(res);
 			break;
 		}
-		printf("%c", by);
-		putc(26, data->fout);
+		putc(by, res);
 	}
     
 	int n = write(data->out_socket, "Successful", strlen("Successful"));
     
     close(data->out_socket);
-    //printf("after thread\n");
-    //printf("----------------\n");
+	fclose(res);
+	//free(data);
     free(thread_data);
     pthread_detach(pthread_self());
-    pthread_exit(0);*/
+    pthread_exit(0);
 }
 
 
